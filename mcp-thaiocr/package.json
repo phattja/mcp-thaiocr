@@ -1,0 +1,47 @@
+{
+    "name": "mcp-thaiocr",
+    "version": "0.1.0-dev.1",
+    "description": "MCP server for Thai OCR with Typhoon-OCR1.5-2B",
+    "license": "MIT",
+    "author": "phattja (https://github.com/phattja)",
+    "homepage": "https://github.com/phattja/mcp-thaiocr",
+    "bugs": "https://github.com/phattja/mcp-thaiocr/issues",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/phattja/mcp-thaiocr"
+    },
+    "type": "module",
+    "bin": {
+        "mcp-thaiocr": "dist/cli.js"
+    },
+    "main": "dist/index.js",
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "build": "tsc && shx chmod +x dist/*.js",
+        "start": "node dist/cli.js",
+        "watch": "tsc --watch",
+        "test": "tsx __tests__/run-all.ts",
+        "inspector": "npx @modelcontextprotocol/inspector node dist/cli.js"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.30.0",
+        "express": "^5.2.1",
+        "cors": "^2.8.6",
+        "undici": "^7.29.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.20.1",
+        "@types/express": "^5.0.6",
+        "@types/cors": "^2.8.19",
+        "@typescript-eslint/eslint-plugin": "^8.66.0",
+        "@typescript-eslint/parser": "^8.66.0",
+        "typescript": "^5.8.3",
+        "tsx": "^4.23.5",
+        "shx": "^0.4.0"
+    }
+}

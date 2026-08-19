@@ -1,0 +1,39 @@
+services:
+  thaiocr:
+    build:
+      context: /ai/thaiocr
+      dockerfile: Dockerfile
+    image: thaiocr:latest
+    container_name: thaiocr
+    hostname: thaiocr
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    restart: always
+    network_mode: "host"
+    user: "1001:1001"
+    cap_add:
+      - SYS_NICE
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - OCR_HTTP_PORT=8006
+      - OCR_HTTP_HOST=0.0.0.0
+      - OCR_ENDPOINT=http://127.0.0.1:3003/v1
+      - OCR_MODEL=Typhoon-OCR1.5-2B
+      - OCR_HTTP_STATELESS=true
+    ipc: host
+    entrypoint: ["/ai/thaiocr/start.sh"]
+    command:
+      - --http-port=8006
+      - --http-host=0.0.0.0
+      - --ocr-endpoint=http://127.0.0.1:1111/v1
+      - --ocr-model=Typhoon-OCR1.5-2B
+    volumes:
+      - /etc/sudoers.d:/etc/sudoers.d:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - /etc/shadow:/etc/shadow:ro
+      - /ai/thaiocr:/ai/thaiocr

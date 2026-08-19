@@ -1,0 +1,5 @@
+mcp-thaiocr/node_modules/
+mcp-thaiocr/dist/
+*.log
+.env
+.DS_Store

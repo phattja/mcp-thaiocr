@@ -1,0 +1,47 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.phattja/mcp-thaiocr",
+  "title": "Thai OCR MCP Server",
+  "description": "MCP server for Thai OCR with Typhoon-OCR1.5-2B",
+  "version": "0.1.0-dev.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "mcp-thaiocr",
+      "version": "0.1.0-dev.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OCR_ENDPOINT",
+          "description": "OCR API endpoint URL",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "OCR_MODEL",
+          "description": "Default OCR model name",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "OCR_HTTP_PORT",
+          "description": "HTTP port for streamable transport",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number"
+        },
+        {
+          "name": "OCR_HTTP_HOST",
+          "description": "HTTP bind address",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
