@@ -1,8 +1,10 @@
-# Thai OCR MCP Server
+# phattja/mcp-thaiocr
 
 **Semantic Thai document OCR for AI assistants — Typhoon-OCR1.5-2B via MCP.**
 
-An [MCP server](https://modelcontextprotocol.io/introduction) that extracts Thai and English text from images (PNG, JPG, PDF). Layout and HTTP transport follow [mcp-thailaw](https://github.com/phattja/mcp-thailaw).
+Author: [phattja](https://github.com/phattja).
+
+An [MCP server](https://modelcontextprotocol.io/introduction) that extracts Thai and English text from images and PDFs (PNG, JPEG, WEBP, GIF, TIFF, BMP, PDF).
 
 ```
 AI Assistant / Open WebUI
@@ -11,7 +13,7 @@ AI Assistant / Open WebUI
   mcp-thaiocr  (this project — Node.js)
         │  OpenAI-compatible /v1/chat/completions
         ▼
-  Typhoon-OCR1.5-2B  (http://127.0.0.1:3003/v1)
+  Typhoon-OCR1.5-2B  (http://ai-tool:3003/v1)
 ```
 
 ## Quick Start
@@ -23,7 +25,7 @@ cd mcp-thaiocr
 npm install
 npm run build
 node dist/cli.js --http-port 8006 --http-host 0.0.0.0 \
-  --ocr-endpoint http://127.0.0.1:3003/v1 \
+  --ocr-endpoint http://ai-tool:3003/v1 \
   --ocr-model Typhoon-OCR1.5-2B
 ```
 
@@ -47,7 +49,7 @@ docker compose up -d --build
       "command": "npx",
       "args": ["-y", "mcp-thaiocr"],
       "env": {
-        "OCR_ENDPOINT": "http://127.0.0.1:3003/v1",
+        "OCR_ENDPOINT": "http://ai-tool:3003/v1",
         "OCR_MODEL": "Typhoon-OCR1.5-2B"
       }
     }
@@ -57,12 +59,16 @@ docker compose up -d --build
 
 ## Tools
 
-* **ocr_thai** — extract text from a Thai document image
-    * `source` — `file`, `url`, or `base64` (required)
+* **thaiocr** — extract text from a Thai document image or PDF
+    * Supported types: PNG, JPEG/JPG, WEBP, GIF, TIFF/TIF, BMP, PDF
+    * `image` — path, URL, data URI, raw base64, or Open WebUI file id
+    * `source` — `file`, `url`, or `base64` (optional, auto-detected)
     * `file_path` — local path when `source=file`
     * `url` — image URL when `source=url`
     * `base64` — encoded image when `source=base64`
-    * `model`, `max_tokens`, `temperature`, `top_p`, `repetition_penalty`
+    * `task`, `prompt`, `page`, `model`, `max_tokens`, `temperature`, `top_p`, `repetition_penalty`
+
+Resources: **thaiocr_guides** (`thaiocr://guides`), **thaiocr_config** (`thaiocr://config`).
 
 HTTP transport is **stateless** by default (`OCR_HTTP_STATELESS=true`) so browser and Open WebUI clients do not need to persist `Mcp-Session-Id`.
 
@@ -70,16 +76,12 @@ HTTP transport is **stateless** by default (`OCR_HTTP_STATELESS=true`) so browse
 
 | Setting | Default |
 |---------|---------|
-| OCR endpoint | `http://127.0.0.1:3003/v1` |
+| OCR endpoint | `http://ai-tool:3003/v1` |
 | Model | `Typhoon-OCR1.5-2B` |
 | HTTP port | `8006` |
 | HTTP host | `0.0.0.0` |
 
 CLI flags (`--http-port`, `--http-host`, `--ocr-endpoint`, `--ocr-model`) override the matching environment variables (`OCR_HTTP_PORT`, `OCR_HTTP_HOST`, `OCR_ENDPOINT`, `OCR_MODEL`).
-
-## Acknowledgements
-
-HTTP/MCP layout is adapted from **[mcp-thailaw](https://github.com/phattja/mcp-thailaw)**, itself a fork of [mcp-searxng](https://github.com/ihor-sokoliuk/mcp-searxng).
 
 ## License
 

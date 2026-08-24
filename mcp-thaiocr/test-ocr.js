@@ -10,7 +10,7 @@ import { readFile } from 'fs/promises';
 
 // Configuration
 const OCR_IMAGE_PATH = '/tmp/1.png';
-const OCR_API_ENDPOINT = process.env.OCR_ENDPOINT || 'http://127.0.0.1:3003/v1';
+const OCR_API_ENDPOINT = process.env.OCR_ENDPOINT || 'http://ai-tool:3003/v1';
 const MODEL = process.env.OCR_MODEL || 'Typhoon-OCR1.5-2B';
 
 // MCP initialize request
@@ -41,7 +41,7 @@ function createOCRToolCall(imagePath) {
     id: 2,
     method: "tools/call",
     params: {
-      name: "ocr_thai",
+      name: "thaiocr",
       arguments: {
         source: "file",
         file_path: imagePath,
@@ -73,7 +73,7 @@ async function runMCPTCPSim() {
     console.log("3. Client sends initialized notification");
     console.log(JSON.stringify(initializedNotification, null, 2));
     
-    console.log("\n4. Client calls ocr_thai tool");
+    console.log("\n4. Client calls thaiocr tool");
     console.log(JSON.stringify(createOCRToolCall(OCR_IMAGE_PATH), null, 2));
     
     console.log("\n5. Server returns OCR result");

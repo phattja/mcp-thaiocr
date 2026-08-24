@@ -1,158 +1,103 @@
-export type OCRSource = "file" | "url" | "base64";
+import { packageVersion } from "./version.js";
 
-export interface OCROCRArgs {
-  source: OCRSource;
-  file_path?: string;
-  url?: string;
-  base64?: string;
-  model?: string;
-  max_tokens?: number;
-  temperature?: number;
-  top_p?: number;
-  repetition_penalty?: number;
-}
+export const THAIOCR_TOOL_NAME = "thaiocr";
+export const THAIOCR_TOOL_ALIASES = ["ocr_thai"] as const;
 
-export interface CollectionInfoArgs {
-  refresh?: boolean;
-}
+export const THAIOCR_GUIDES_URI = "thaiocr://guides";
+export const THAIOCR_CONFIG_URI = "thaiocr://config";
+export const THAIOCR_GUIDES_URI_ALIASES = ["help://usage-guide"];
+export const THAIOCR_CONFIG_URI_ALIASES = ["config://server-config"];
 
-export function isOCRArgs(args: unknown): args is OCROCRArgs {
-  if (typeof args !== "object" || args === null || Array.isArray(args)) {
-    return false;
-  }
+export const SUPPORTED_FILE_TYPES =
+  "PNG, JPEG/JPG, WEBP, GIF, TIFF/TIF, BMP, PDF";
 
-  const ocrArgs = args as Record<string, unknown>;
-
-  // Source is required and must be a string
-  if (!ocrArgs.hasOwnProperty("source") || typeof ocrArgs.source !== "string") {
-    return false;
-  }
-
-  const source = ocrArgs.source as OCRSource;
-  if (source !== "file" && source !== "url" && source !== "base64") {
-    return false;
-  }
-
-  // Validate file_path if source is file
-  if (source === "file") {
-    if (!ocrArgs.file_path || typeof ocrArgs.file_path !== "string") {
-      return false;
-    }
-  }
-
-  // Validate url if source is url
-  if (source === "url") {
-    if (!ocrArgs.url || typeof ocrArgs.url !== "string") {
-      return false;
-    }
-  }
-
-  // Validate base64 if source is base64
-  if (source === "base64") {
-    if (!ocrArgs.base64 || typeof ocrArgs.base64 !== "string") {
-      return false;
-    }
-  }
-
-  // Optional parameters validation
-  if (ocrArgs.model !== undefined && typeof ocrArgs.model !== "string") {
-    return false;
-  }
-
-  if (ocrArgs.max_tokens !== undefined) {
-    if (typeof ocrArgs.max_tokens !== "number" || !Number.isInteger(ocrArgs.max_tokens) || ocrArgs.max_tokens < 1) {
-      return false;
-    }
-  }
-
-  if (ocrArgs.temperature !== undefined) {
-    if (typeof ocrArgs.temperature !== "number" || Number.isNaN(ocrArgs.temperature) || ocrArgs.temperature < 0 || ocrArgs.temperature > 1) {
-      return false;
-    }
-  }
-
-  if (ocrArgs.top_p !== undefined) {
-    if (typeof ocrArgs.top_p !== "number" || Number.isNaN(ocrArgs.top_p) || ocrArgs.top_p < 0 || ocrArgs.top_p > 1) {
-      return false;
-    }
-  }
-
-  if (ocrArgs.repetition_penalty !== undefined) {
-    if (typeof ocrArgs.repetition_penalty !== "number" || Number.isNaN(ocrArgs.repetition_penalty) || ocrArgs.repetition_penalty <= 0) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-export function isCollectionInfoArgs(args: unknown): args is CollectionInfoArgs {
-  if (args === undefined || args === null) {
-    return true;
-  }
-  if (typeof args !== "object") {
-    return false;
-  }
-  const infoArgs = args as Record<string, unknown>;
-  if (infoArgs.refresh !== undefined && typeof infoArgs.refresh !== "boolean") {
-    return false;
-  }
-  return true;
-}
-
-// Tool definition for Thai OCR
 export const OCR_THAI_TOOL: { name: string; description: string; inputSchema: object } = {
-  name: "ocr_thai",
+  name: THAIOCR_TOOL_NAME,
   description:
-    "แปลงภาพเป็นข้อความภาษาไทยและภาษาอังกฤษด้วย AI OCR (typhoon-ocr). รองรับไฟล์ภาพ PNG, JPG และ PDF. "
-    + "ใช้กับเอกสารกฎหมายไทย, คำพิพากษาศาล, และเอกสารราชการอื่นๆ.",
+    `mcp-thaiocr ${packageVersion}. Extract Thai and English text from documents with Typhoon-OCR1.5-2B. `
+    + `Supported file types: ${SUPPORTED_FILE_TYPES}. `
+    + "Images always process page 1. PDFs default to page 1; pass `page` as `all` or a range (`1-3`, `1,3`, `4,6,7-9`) for more pages. Output is separated by `--- Page N ---`. "
+    + "Task types: `default` (plain markdown), `structure` (HTML tables), `v1.5` (clean Markdown with HTML tables and Thai figure descriptions). "
+    + "IMPORTANT: llama.cpp WebUI and Open WebUI do not attach chat images to this tool. "
+    + "You must pass the image yourself as `image`: an absolute host path (e.g. /tmp/1.png), "
+    + "a URL, a data:image/...;base64,... URI, raw base64, or an Open WebUI file id. "
+    + "A bare filename is searched in /tmp, /tmp/ocr-inbox, and Open WebUI uploads.",
   inputSchema: {
     type: "object",
     properties: {
+      image: {
+        type: "string",
+        description:
+          "Image to OCR: absolute path, filename, http(s) URL, data URI, raw base64, or Open WebUI file id",
+      },
       source: {
         type: "string",
         enum: ["file", "url", "base64"],
-        description: "แหล่งข้อมูล: file (ไฟล์ในเซิร์ฟเวอร์), url (ลิงก์ภาพ), base64 (encoded string)",
+        description: "Optional. Auto-detected from image/file_path/url/base64 when omitted",
       },
       file_path: {
         type: "string",
-        description: "เส้นทางไฟล์ภาพเมื่อ source=file เช่น /tmp/1.png, /path/to/image.jpg",
+        description: "Local file path when the image is on this host",
       },
       url: {
         type: "string",
-        description: "URL ของภาพเมื่อ source=url",
+        description: "http(s) URL of the image",
       },
       base64: {
         type: "string",
-        description: "ฐานหกสี่ของภาพเมื่อ source=base64 (ไม่รวม data URI prefix)",
+        description: "Raw base64 or data URI of the image",
+      },
+      file_id: {
+        type: "string",
+        description: "Open WebUI file id (requires OPENWEBUI_URL)",
+      },
+      __files__: {
+        type: "array",
+        description: "Open WebUI attached files (injected by the client when supported)",
+        items: { type: "object" },
       },
       model: {
         type: "string",
-        description: "โมเดล OCR ที่ใช้ (เช่น Typhoon-OCR1.5-2B). ค่าเริ่มต้นตาม config",
+        description: "OCR model name (default Typhoon-OCR1.5-2B)",
+      },
+      task: {
+        type: "string",
+        enum: ["default", "structure", "v1.5"],
+        description:
+          "OCR task type: 'default' (plain text markdown), 'structure' (HTML tables and placeholders), 'v1.5' (clean Markdown with HTML tables and Thai figure descriptions). Default v1.5.",
+      },
+      prompt: {
+        type: "string",
+        description:
+          "Custom instructions appended to the OCR prompt for every page. Default: extract all text as clean Markdown with no extra explanation.",
+      },
+      page: {
+        type: "string",
+        description:
+          "Pages to process for PDF inputs. Default '1' (first page). Use 'all' or a list like '1-3', '1,3', or '4,6,7-9'. Single images always process page 1.",
       },
       max_tokens: {
         type: "integer",
         minimum: 1,
-        description: "จำนวนโทเค็นสูงสุดที่จะสร้าง (ค่าเริ่มต้น 4096)",
+        description: "Maximum tokens to generate (default 32768)",
       },
       temperature: {
         type: "number",
         minimum: 0,
         maximum: 1,
-        description: "อุณหภูมิสำหรับการสร้างข้อความ (ค่าเริ่มต้น 0.1). ยิ่งต่ำยิ่งคาดเดาได้",
+        description: "Sampling temperature (default 0.1)",
       },
       top_p: {
         type: "number",
         minimum: 0,
         maximum: 1,
-        description: "ค่า top-p sampling (ค่าเริ่มต้น 0.6)",
+        description: "Top-p sampling (default 0.6)",
       },
       repetition_penalty: {
         type: "number",
         minimum: 0,
-        description: "บทลงโทษการซ้ำซ้อน (ค่าเริ่มต้น 1.2)",
+        description: "Repetition penalty (default 1.2)",
       },
     },
-    required: ["source"],
   },
 };

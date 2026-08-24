@@ -1,0 +1,143 @@
+#!/usr/bin/python3
+import argparse
+import sys
+from openai import OpenAI
+from typhoon_ocr import prepare_ocr_messages
+
+
+def parse_page_ranges(page_arg: str) -> set:
+    """
+    Parses complex page range strings like '1-3', '1,3', '4,6,7-9' into a set of integers.
+    Returns None or empty set if 'all' is chosen.
+    """
+    if not page_arg or page_arg.strip().lower() == "all":
+        return None
+
+    pages = set()
+    # Remove all spaces and split by comma
+    parts = page_arg.replace(" ", "").split(",")
+    
+    for part in parts:
+        if not part:
+            continue
+        if "-" in part:
+            try:
+                start, end = map(int, part.split("-"))
+                if start <= end:
+                    pages.update(range(start, end + 1))
+                else:
+                    pages.update(range(end, start + 1))
+            except ValueError:
+                raise ValueError(f"Invalid range format: '{part}'")
+        else:
+            try:
+                pages.add(int(part))
+            except ValueError:
+                raise ValueError(f"Invalid page number: '{part}'")
+                
+    return pages
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Process multi-page document via Typhoon OCR local API with streaming.")
+    
+    # Changed from optional '--image' to a required positional argument 'image'
+    parser.add_argument("image", help="Path to image or PDF file")
+    
+    # Optional parameters with hardcoded defaults
+    parser.add_argument("--url", default="http://ai-tool:3003/v1", help="Base URL for the API endpoint")
+    parser.add_argument("--api-key", default="no-key", help="API Key for authentication")
+    parser.add_argument("--model", default="Typhoon-OCR1.5-2B", help="Model name")
+    parser.add_argument("--task", default="default", help="OCR task type default: plain text markdown or structure: HTML tables and placeholders.")
+    parser.add_argument("--prompt", default="", help="Extract all text from the image. Instructions: 1.Only return the clean Markdown. 2.Do not include any explanation or extra text. 3.You must include all information on the page.")
+    parser.add_argument(
+        "--page", 
+        default="all", 
+        help="Specify page numbers or ranges to process. Examples: 'all', '1-3', '1,3', or '4,6,7-9' (default: all)"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        # Parse the page selection argument
+        target_pages = parse_page_ranges(args.page)
+    except ValueError as e:
+        print(f"[!] CLI Parameter Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        # Initialize client once
+        client = OpenAI(
+            base_url=args.url,
+            api_key=args.api_key
+        )
+
+        is_pdf = args.image.lower().endswith('.pdf')
+        page = 1
+
+        while True:
+            # Skip page if specific range target is provided and current page is not inside it
+            if is_pdf and target_pages is not None and page not in target_pages:
+                # If we have targets, check if we've already passed the maximum requested target page
+                if page > max(target_pages):
+                    break
+                page += 1
+                continue
+
+            try:
+                # 1. Prepare OCR messages for the current page
+                messages = prepare_ocr_messages(
+                    pdf_or_image_path=args.image,
+                    task_type=args.task,
+                    page_num=page if is_pdf else 1
+                )
+            except Exception as e:
+                # If page exceeds total PDF pages, break the loop cleanly
+                if is_pdf and page > 1:
+                    break
+                raise e
+
+            # 2. Append custom prompt if provided
+            if args.prompt:
+                msg_content = messages if isinstance(messages, list) else messages.get("content", [])
+                for item in msg_content:
+                    if item.get("type") == "text":
+                        item["text"] += f"\n{args.prompt}"
+
+            if is_pdf:
+                print(f"\n--- Page {page} ---", flush=True)
+
+            # 3. Call local API endpoint
+            response = client.chat.completions.create(
+                model=args.model,
+                messages=messages,
+                max_tokens=32768,
+                temperature=0.1,
+                top_p=0.6,
+                stream=True,
+                extra_body={"repetition_penalty": 1.2}
+            )
+
+            # 4. Stream output token-by-token
+            for chunk in response:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    print(chunk.choices[0].delta.content, end="", flush=True)
+            print()
+
+            # Break immediately if it is a single static image file
+            if not is_pdf:
+                break
+                
+            page += 1
+
+    except KeyboardInterrupt:
+        print("\n\n[!] Operation cancelled by user.", file=sys.stderr)
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n[!] Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+

@@ -21,15 +21,17 @@ services:
       - DEBIAN_FRONTEND=noninteractive
       - OCR_HTTP_PORT=8006
       - OCR_HTTP_HOST=0.0.0.0
-      - OCR_ENDPOINT=http://127.0.0.1:3003/v1
+      - OCR_ENDPOINT=http://ai-tool:3003/v1
+      - THAIOCR_PYTHON=/opt/typhoon-ocr/bin/python3
       - OCR_MODEL=Typhoon-OCR1.5-2B
       - OCR_HTTP_STATELESS=true
+      - OCR_UPLOAD_DIRS=/tmp,/tmp/ocr-inbox,/ai/openwebui/data/uploads
     ipc: host
     entrypoint: ["/ai/thaiocr/start.sh"]
     command:
       - --http-port=8006
       - --http-host=0.0.0.0
-      - --ocr-endpoint=http://127.0.0.1:1111/v1
+      - --ocr-endpoint=http://ai-tool:3003/v1
       - --ocr-model=Typhoon-OCR1.5-2B
     volumes:
       - /etc/sudoers.d:/etc/sudoers.d:ro
@@ -37,3 +39,5 @@ services:
       - /etc/group:/etc/group:ro
       - /etc/shadow:/etc/shadow:ro
       - /ai/thaiocr:/ai/thaiocr
+      - /tmp:/tmp
+      - /ai/openwebui/data/uploads:/ai/openwebui/data/uploads:ro

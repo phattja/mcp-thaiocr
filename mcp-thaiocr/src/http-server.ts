@@ -189,6 +189,35 @@ export async function createHttpServer(
     }
   });
 
+  app.post("/ocr", async (req, res) => {
+    try {
+      const image = typeof req.body?.image === "string"
+        ? req.body.image
+        : typeof req.body?.url === "string"
+          ? req.body.url
+          : typeof req.body?.file_path === "string"
+            ? req.body.file_path
+            : typeof req.body?.base64 === "string"
+              ? req.body.base64
+              : undefined;
+      if (!image) {
+        res.status(400).json({
+          error: "Provide image, url, file_path, or base64 in the JSON body",
+        });
+        return;
+      }
+      const { performOCR } = await import("./ocr.js");
+      const mcpServer = createMcpServer();
+      const text = await performOCR(mcpServer, { image });
+      void mcpServer.close();
+      res.json({ text });
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
   app.get("/health", (_req, res) => {
     res.json({
       status: "healthy",

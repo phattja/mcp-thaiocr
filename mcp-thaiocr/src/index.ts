@@ -9,9 +9,17 @@ import {
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { OCR_THAI_TOOL } from "./types.js";
+import {
+  OCR_THAI_TOOL,
+  THAIOCR_TOOL_NAME,
+  THAIOCR_TOOL_ALIASES,
+  THAIOCR_GUIDES_URI,
+  THAIOCR_CONFIG_URI,
+  THAIOCR_GUIDES_URI_ALIASES,
+  THAIOCR_CONFIG_URI_ALIASES,
+} from "./types.js";
 import { logMessage, setLogLevel, getCurrentLogLevel, shouldLog } from "./logging.js";
-import { performOCR, type OCRRequestArgs } from "./ocr.js";
+import { performOCR, summarizeArgs, type OCRRequestArgs } from "./ocr.js";
 import { createConfigResource, createHelpResource } from "./resources.js";
 import { createHttpServer, resolveBindHost } from "./http-server.js";
 import { initializeDiagnosticSanitizer, sanitizeErrorForTransport } from "./diagnostic-sanitizer.js";
@@ -52,28 +60,33 @@ export function createMcpServer(): McpServer {
     }
 
     try {
-      if (name === "ocr_thai") {
-        // Validate arguments structure
+      if (name === THAIOCR_TOOL_NAME || (THAIOCR_TOOL_ALIASES as readonly string[]).includes(name)) {
         if (!args || typeof args !== "object" || Array.isArray(args)) {
           throw new Error("Invalid arguments for Thai OCR");
         }
 
         const rawArgs = args as Record<string, unknown>;
-        if (!rawArgs.hasOwnProperty("source") || typeof rawArgs.source !== "string") {
-          throw new Error("source parameter is required and must be a string");
-        }
+        logMessage(mcpServer, "info", `${THAIOCR_TOOL_NAME} arguments`, summarizeArgs(rawArgs));
 
-        // Construct properly typed arguments
         const ocrArgs: OCRRequestArgs = {
-          source: rawArgs.source as "file" | "url" | "base64",
-          file_path: rawArgs.file_path as string | undefined,
-          url: rawArgs.url as string | undefined,
-          base64: rawArgs.base64 as string | undefined,
-          model: rawArgs.model as string | undefined,
-          max_tokens: rawArgs.max_tokens as number | undefined,
-          temperature: rawArgs.temperature as number | undefined,
-          top_p: rawArgs.top_p as number | undefined,
-          repetition_penalty: rawArgs.repetition_penalty as number | undefined,
+          image: rawArgs.image,
+          source: typeof rawArgs.source === "string" ? rawArgs.source : undefined,
+          file_path: typeof rawArgs.file_path === "string" ? rawArgs.file_path : undefined,
+          url: typeof rawArgs.url === "string" ? rawArgs.url : undefined,
+          base64: typeof rawArgs.base64 === "string" ? rawArgs.base64 : undefined,
+          file_id: typeof rawArgs.file_id === "string" ? rawArgs.file_id : undefined,
+          __files__: rawArgs.__files__,
+          files: rawArgs.files,
+          model: typeof rawArgs.model === "string" ? rawArgs.model : undefined,
+          task: typeof rawArgs.task === "string" ? rawArgs.task : undefined,
+          prompt: typeof rawArgs.prompt === "string" ? rawArgs.prompt : undefined,
+          page: typeof rawArgs.page === "string" ? rawArgs.page : undefined,
+          max_tokens: typeof rawArgs.max_tokens === "number" ? rawArgs.max_tokens : undefined,
+          temperature: typeof rawArgs.temperature === "number" ? rawArgs.temperature : undefined,
+          top_p: typeof rawArgs.top_p === "number" ? rawArgs.top_p : undefined,
+          repetition_penalty: typeof rawArgs.repetition_penalty === "number"
+            ? rawArgs.repetition_penalty
+            : undefined,
         };
 
         const result = await performOCR(mcpServer, ocrArgs, extra.signal);
@@ -112,16 +125,16 @@ export function createMcpServer(): McpServer {
     return {
       resources: [
         {
-          uri: "config://server-config",
+          uri: THAIOCR_CONFIG_URI,
           mimeType: "application/json",
-          name: "Server Configuration",
-          description: "Current server configuration and environment variables",
+          name: "thaiocr_config",
+          description: "Current thaiocr server configuration and environment variables",
         },
         {
-          uri: "help://usage-guide",
+          uri: THAIOCR_GUIDES_URI,
           mimeType: "text/markdown",
-          name: "Usage Guide",
-          description: "How to use the Thai OCR MCP server",
+          name: "thaiocr_guides",
+          description: "How to use the thaiocr MCP tool (file types, PDF pages, task types)",
         },
       ],
     };
@@ -140,30 +153,29 @@ export function createMcpServer(): McpServer {
       logMessage(mcpServer, "debug", `Handling read_resource request for: ${uri}`);
     }
 
-    switch (uri) {
-      case "config://server-config":
-        return {
-          contents: [
-            {
-              uri,
-              mimeType: "application/json",
-              text: createConfigResource(mcpServer),
-            },
-          ],
-        };
-      case "help://usage-guide":
-        return {
-          contents: [
-            {
-              uri,
-              mimeType: "text/markdown",
-              text: createHelpResource(),
-            },
-          ],
-        };
-      default:
-        throw sanitizeErrorForTransport(new Error(`Unknown resource: ${uri}`));
+    if (uri === THAIOCR_CONFIG_URI || THAIOCR_CONFIG_URI_ALIASES.includes(uri)) {
+      return {
+        contents: [
+          {
+            uri: THAIOCR_CONFIG_URI,
+            mimeType: "application/json",
+            text: createConfigResource(mcpServer),
+          },
+        ],
+      };
     }
+    if (uri === THAIOCR_GUIDES_URI || THAIOCR_GUIDES_URI_ALIASES.includes(uri)) {
+      return {
+        contents: [
+          {
+            uri: THAIOCR_GUIDES_URI,
+            mimeType: "text/markdown",
+            text: createHelpResource(),
+          },
+        ],
+      };
+    }
+    throw sanitizeErrorForTransport(new Error(`Unknown resource: ${uri}`));
   });
 
   return mcpServer;

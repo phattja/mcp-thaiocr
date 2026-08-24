@@ -34,11 +34,11 @@ OPTIONS
   --version, -v              Show version number
   --http-port PORT           Set HTTP port for streamable transport (default: 8006)
   --http-host HOST           Bind host for HTTP server (default: 0.0.0.0)
-  --ocr-endpoint URL         OCR API endpoint URL (default: http://127.0.0.1:3003/v1)
+  --ocr-endpoint URL         OCR API endpoint URL (default: http://ai-tool:3003/v1)
   --ocr-model NAME           OCR model name (default: Typhoon-OCR1.5-2B)
 
 ENVIRONMENT VARIABLES
-  OCR_ENDPOINT        OCR API endpoint URL (default: http://127.0.0.1:3003/v1)
+  OCR_ENDPOINT        OCR API endpoint URL (default: http://ai-tool:3003/v1)
   OCR_MODEL           Default OCR model name (default: Typhoon-OCR1.5-2B)
   DEFAULT_MAX_TOKENS  Maximum tokens to generate (default: 4096)
   DEFAULT_TEMPERATURE Sampling temperature (default: 0.1)
