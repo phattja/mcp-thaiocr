@@ -42,8 +42,8 @@ export async function createHttpServer(
   // Stateless is the default so browser / Open WebUI clients that do not
   // persist Mcp-Session-Id can still call tools/list after initialize.
   const stateless = envEnabled("OCR_HTTP_STATELESS", true);
+  const bodyLimit = process.env.OCR_HTTP_BODY_LIMIT?.trim() || "512mb";
 
-  app.use(express.json({ limit: "50mb" }));
   app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
@@ -56,6 +56,8 @@ export async function createHttpServer(
       "mcp-protocol-version",
     ],
   }));
+  app.use(express.json({ limit: bodyLimit }));
+  app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
   const sessions = new Map<string, Session>();
 
@@ -227,6 +229,30 @@ export async function createHttpServer(
       mode: stateless ? "stateless" : "session",
       mcp: "/mcp",
     });
+  });
+
+  app.use((
+    error: unknown,
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    const err = error as { type?: string; status?: number; message?: string };
+    if (err?.type === "entity.too.large" || err?.status === 413) {
+      writeDiagnostic("error", `Request entity too large: ${err.message || "payload exceeds JSON limit"}`);
+      if (!res.headersSent) {
+        res.status(413).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: `Request too large (limit ${bodyLimit}). Pass a host file path in image instead of embedding a huge base64 payload.`,
+          },
+          id: null,
+        });
+      }
+      return;
+    }
+    next(error);
   });
 
   return app;

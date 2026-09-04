@@ -3,12 +3,12 @@
   "name": "io.github.phattja/mcp-thaiocr",
   "title": "phattja/mcp-thaiocr",
   "description": "MCP server for Thai OCR with Typhoon-OCR1.5-2B",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "mcp-thaiocr",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "transport": {
         "type": "stdio"
       },

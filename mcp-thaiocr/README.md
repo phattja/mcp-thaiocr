@@ -33,7 +33,7 @@ Health: `http://127.0.0.1:8006/health`
       "command": "npx",
       "args": ["-y", "mcp-thaiocr"],
       "env": {
-        "OCR_ENDPOINT": "http://ai-tool:3003/v1",
+        "OCR_ENDPOINT": "http://ai-tools:3000/v1",
         "OCR_MODEL": "Typhoon-OCR1.5-2B"
       }
     }
@@ -45,7 +45,7 @@ Health: `http://127.0.0.1:8006/health`
 
 ```bash
 node dist/cli.js --http-port 8006 --http-host 0.0.0.0 \
-  --ocr-endpoint http://ai-tool:3003/v1 \
+  --ocr-endpoint http://ai-tools:3000/v1 \
   --ocr-model Typhoon-OCR1.5-2B
 ```
 
@@ -86,7 +86,7 @@ For PDFs, each page's output is separated by `--- Page N ---`. `page` defaults t
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OCR_ENDPOINT` | OCR API endpoint URL | `http://ai-tool:3003/v1` |
+| `OCR_ENDPOINT` | OCR API endpoint URL | `http://ai-tools:3000/v1` |
 | `OCR_MODEL` | Default model name | `Typhoon-OCR1.5-2B` |
 | `DEFAULT_MAX_TOKENS` | Maximum tokens to generate | `32768` |
 | `DEFAULT_TEMPERATURE` | Sampling temperature | `0.1` |
@@ -108,7 +108,7 @@ npm run build
 node dist/cli.js --http-port 8006 --http-host 0.0.0.0
 ```
 
-Requires Node.js 20+, Python `typhoon-ocr` plus Poppler (`pdfinfo`/`pdftoppm`) for PDFs, and a running Typhoon-OCR1.5-2B server at `http://ai-tool:3003/v1`. The Docker image installs those Python/Poppler dependencies into `/opt/typhoon-ocr`.
+Requires Node.js 20+, Python `typhoon-ocr` plus Poppler (`pdfinfo`/`pdftoppm`) for PDFs, and a running Typhoon-OCR1.5-2B server at `http://ai-tools:3000/v1`. The Docker image installs those Python/Poppler dependencies into `/opt/typhoon-ocr`.
 
 ## License
 

@@ -21,7 +21,7 @@ services:
       - DEBIAN_FRONTEND=noninteractive
       - OCR_HTTP_PORT=8006
       - OCR_HTTP_HOST=0.0.0.0
-      - OCR_ENDPOINT=http://ai-tool:3003/v1
+      - OCR_ENDPOINT=http://ai-tools:3000/v1
       - THAIOCR_PYTHON=/opt/typhoon-ocr/bin/python3
       - OCR_MODEL=Typhoon-OCR1.5-2B
       - OCR_HTTP_STATELESS=true
@@ -31,7 +31,7 @@ services:
     command:
       - --http-port=8006
       - --http-host=0.0.0.0
-      - --ocr-endpoint=http://ai-tool:3003/v1
+      - --ocr-endpoint=http://ai-tools:3000/v1
       - --ocr-model=Typhoon-OCR1.5-2B
     volumes:
       - /etc/sudoers.d:/etc/sudoers.d:ro

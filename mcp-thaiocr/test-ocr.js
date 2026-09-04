@@ -10,7 +10,7 @@ import { readFile } from 'fs/promises';
 
 // Configuration
 const OCR_IMAGE_PATH = '/tmp/1.png';
-const OCR_API_ENDPOINT = process.env.OCR_ENDPOINT || 'http://ai-tool:3003/v1';
+const OCR_API_ENDPOINT = process.env.OCR_ENDPOINT || 'http://ai-tools:3000/v1';
 const MODEL = process.env.OCR_MODEL || 'Typhoon-OCR1.5-2B';
 
 // MCP initialize request

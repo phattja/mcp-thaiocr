@@ -13,7 +13,7 @@ AI Assistant / Open WebUI
   mcp-thaiocr  (this project — Node.js)
         │  OpenAI-compatible /v1/chat/completions
         ▼
-  Typhoon-OCR1.5-2B  (http://ai-tool:3003/v1)
+  Typhoon-OCR1.5-2B  (http://ai-tools:3000/v1)
 ```
 
 ## Quick Start
@@ -25,7 +25,7 @@ cd mcp-thaiocr
 npm install
 npm run build
 node dist/cli.js --http-port 8006 --http-host 0.0.0.0 \
-  --ocr-endpoint http://ai-tool:3003/v1 \
+  --ocr-endpoint http://ai-tools:3000/v1 \
   --ocr-model Typhoon-OCR1.5-2B
 ```
 
@@ -49,7 +49,7 @@ docker compose up -d --build
       "command": "npx",
       "args": ["-y", "mcp-thaiocr"],
       "env": {
-        "OCR_ENDPOINT": "http://ai-tool:3003/v1",
+        "OCR_ENDPOINT": "http://ai-tools:3000/v1",
         "OCR_MODEL": "Typhoon-OCR1.5-2B"
       }
     }
@@ -76,7 +76,7 @@ HTTP transport is **stateless** by default (`OCR_HTTP_STATELESS=true`) so browse
 
 | Setting | Default |
 |---------|---------|
-| OCR endpoint | `http://ai-tool:3003/v1` |
+| OCR endpoint | `http://ai-tools:3000/v1` |
 | Model | `Typhoon-OCR1.5-2B` |
 | HTTP port | `8006` |
 | HTTP host | `0.0.0.0` |

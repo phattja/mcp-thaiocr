@@ -89,7 +89,7 @@ This usage guide.
 ## Configuration
 
 Environment variables:
-- \`OCR_ENDPOINT\`: OCR API endpoint URL (default: http://ai-tool:3003/v1)
+- \`OCR_ENDPOINT\`: OCR API endpoint URL (default: http://ai-tools:3000/v1)
 - \`OCR_MODEL\`: Default model name (default: Typhoon-OCR1.5-2B)
 - \`DEFAULT_MAX_TOKENS\`: Maximum tokens (default: 32768)
 - \`DEFAULT_TEMPERATURE\`: Temperature value (default: 0.1)
@@ -110,7 +110,7 @@ Environment variables:
       "command": "npx",
       "args": ["-y", "mcp-thaiocr"],
       "env": {
-        "OCR_ENDPOINT": "http://ai-tool:3003/v1"
+        "OCR_ENDPOINT": "http://ai-tools:3000/v1"
       }
     }
   }

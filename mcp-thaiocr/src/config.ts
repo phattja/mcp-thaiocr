@@ -37,7 +37,7 @@ interface OCRConfig {
 
 // Default values
 const DEFAULTS: OCRConfig = {
-  ocrEndpoint: "http://ai-tool:3003/v1",
+  ocrEndpoint: "http://ai-tools:3000/v1",
   ocrModel: "Typhoon-OCR1.5-2B",
   defaultMaxTokens: 32768,
   defaultTemperature: 0.1,
