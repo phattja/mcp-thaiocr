@@ -31,6 +31,7 @@ export function createMcpServer(): McpServer {
   const mcpServer = new McpServer(
     {
       name: SERVER_NAME,
+      title: `mcp-thaiocr ${packageVersion}`,
       version: packageVersion,
     },
     {
